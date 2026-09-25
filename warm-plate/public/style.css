@@ -1,0 +1,160 @@
+:root {
+  --bg: #faf6f0;
+  --card: #ffffff;
+  --text: #2b2420;
+  --muted: #7a6e66;
+  --border: #eadfd3;
+  --accent: #b5452f;
+  --cold: #3b7bbf;
+  --neutral: #c9b79c;
+  --hot: #c8412b;
+  --target: #2b2420;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1c1917;
+    --card: #262220;
+    --text: #f1ebe4;
+    --muted: #a89d94;
+    --border: #3a3431;
+    --accent: #e0765e;
+    --target: #f1ebe4;
+  }
+  .banner { background: #3d3418; color: #f0dfa8; }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", sans-serif;
+}
+
+main {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+h1 { margin: 0; font-size: 28px; }
+h1 .zh { color: var(--accent); font-weight: 500; }
+h2 { font-size: 16px; margin: 0 0 12px; }
+.tagline { color: var(--muted); margin: 4px 0 20px; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+.banner {
+  background: #fff4d6;
+  color: #6b5210;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+}
+
+.term-name { font-weight: 600; }
+#term-zh { color: var(--accent); }
+#term-tip { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+
+.chips { display: grid; gap: 8px; }
+.chip {
+  text-align: left;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  font: inherit;
+}
+.chip small { display: block; color: var(--muted); }
+.chip[aria-checked="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+
+.upload {
+  display: block;
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 28px 16px;
+  text-align: center;
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 600;
+}
+.upload input { display: none; }
+
+#preview {
+  width: 100%;
+  margin-top: 12px;
+  border-radius: 10px;
+  max-height: 320px;
+  object-fit: cover;
+}
+#status { color: var(--muted); margin: 10px 0 0; }
+#status:empty { display: none; }
+#status.error { color: var(--hot); }
+
+.verdict { display: flex; align-items: center; gap: 14px; }
+.score {
+  font-size: 34px;
+  font-weight: 700;
+  min-width: 72px;
+  text-align: center;
+}
+.plate-nature { color: var(--muted); font-size: 14px; }
+.headline { font-size: 18px; font-weight: 600; }
+
+.gauge { position: relative; height: 14px; margin: 18px 0 6px; }
+.gauge-bar {
+  height: 100%;
+  border-radius: 7px;
+  background: linear-gradient(90deg, var(--cold), var(--neutral), var(--hot));
+}
+.gauge-marker {
+  position: absolute;
+  top: -5px;
+  width: 4px;
+  height: 24px;
+  margin-left: -2px;
+  border-radius: 2px;
+  transition: left 0.4s ease;
+}
+.gauge-marker.plate { background: var(--accent); box-shadow: 0 0 0 2px var(--card); }
+.gauge-marker.target { background: var(--target); opacity: 0.6; }
+.gauge-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+.gauge-legend { font-size: 12px; color: var(--muted); margin: 8px 0 0; }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin: 0 4px 0 8px; vertical-align: -1px; }
+.dot.plate { background: var(--accent); margin-left: 0; }
+.dot.target { background: var(--target); opacity: 0.6; }
+
+.grandma .quote { font-size: 17px; font-style: italic; margin: 0; }
+.grandma ul { margin: 10px 0 0; padding-left: 20px; }
+.grandma li { margin: 4px 0; }
+
+.items { list-style: none; padding: 0; margin: 0; }
+.items li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+}
+.items li:first-child { border-top: none; }
+.items .meta { font-size: 13px; color: var(--muted); }
+.badge {
+  flex-shrink: 0;
+  align-self: center;
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 13px;
+  color: #fff;
+}
+
+footer { font-size: 12px; color: var(--muted); margin-top: 24px; }

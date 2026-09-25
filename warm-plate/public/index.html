@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Warm Plate</title>
+  <meta name="description" content="Snap your meal and see if it's warming or cooling, the way a Chinese grandma would.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23b5452f'/%3E%3Ccircle cx='16' cy='16' r='8' fill='%23faf6f0'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Warm Plate <span class="zh">暖盘</span></h1>
+      <p class="tagline">Snap your meal. See if it's warming or cooling, the way a Chinese grandma would.</p>
+    </header>
+
+    <p id="demo-banner" class="banner" hidden>
+      Demo mode: no API key is configured, so every photo returns the same sample result.
+    </p>
+
+    <section class="card" id="term-card" hidden>
+      <div class="term-name"><span id="term-zh"></span> <span id="term-en"></span></div>
+      <p id="term-tip"></p>
+    </section>
+
+    <section class="card">
+      <h2>How does your body usually feel?</h2>
+      <div id="constitutions" class="chips" role="radiogroup" aria-label="Body type"></div>
+    </section>
+
+    <section class="card">
+      <label class="upload" for="photo">
+        <input id="photo" type="file" accept="image/*" capture="environment">
+        <span id="upload-label">Take or choose a photo of your meal</span>
+      </label>
+      <img id="preview" alt="Your meal" hidden>
+      <p id="status" role="status"></p>
+    </section>
+
+    <section id="result" hidden>
+      <div class="card">
+        <div class="verdict">
+          <div class="score" id="score"></div>
+          <div>
+            <div class="plate-nature" id="plate-nature"></div>
+            <div class="headline" id="headline"></div>
+          </div>
+        </div>
+        <div class="gauge" aria-hidden="true">
+          <div class="gauge-bar"></div>
+          <div class="gauge-marker target" id="target-marker" title="Your ideal today"></div>
+          <div class="gauge-marker plate" id="plate-marker" title="This meal"></div>
+        </div>
+        <div class="gauge-labels"><span>Cold 寒</span><span>Neutral 平</span><span>Hot 热</span></div>
+        <p class="gauge-legend"><span class="dot plate"></span> This meal <span class="dot target"></span> Your ideal today</p>
+      </div>
+
+      <div class="card grandma">
+        <p class="quote" id="grandma"></p>
+        <ul id="suggestions"></ul>
+      </div>
+
+      <div class="card">
+        <h2>What's on your plate</h2>
+        <ul id="items" class="items"></ul>
+      </div>
+    </section>
+
+    <footer>
+      Warm Plate shares traditional Chinese food-therapy ideas for everyday eating. It is not medical advice
+      and does not diagnose or treat any condition.
+    </footer>
+  </main>
+  <script src="app.js" type="module"></script>
+</body>
+</html>
