@@ -90,12 +90,15 @@ h2 { font-size: 16px; margin: 0 0 12px; }
 }
 .upload input { display: none; }
 
+/* Show the whole photo, scaled down to fit; never crop it. */
 #preview {
-  width: 100%;
-  margin-top: 12px;
+  display: block;
+  max-width: 100%;
+  max-height: 60vh;
+  width: auto;
+  height: auto;
+  margin: 12px auto 0;
   border-radius: 10px;
-  max-height: 320px;
-  object-fit: cover;
 }
 #status { color: var(--muted); margin: 10px 0 0; }
 #status:empty { display: none; }
