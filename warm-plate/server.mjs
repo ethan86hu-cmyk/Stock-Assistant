@@ -4,6 +4,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { recognizeMeal, providerInfo, RecognitionError } from "./lib/recognize.mjs";
+import { normalizeRecognition } from "./lib/recognition.mjs";
 import { scorePlate, CONSTITUTIONS } from "./lib/scoring.mjs";
 import { solarTermFor } from "./lib/solarTerms.mjs";
 
@@ -31,14 +32,14 @@ async function readJsonBody(req) {
   for await (const chunk of req) {
     size += chunk.length;
     if (size > MAX_BODY_BYTES) {
-      throw new RecognitionError("Image is too large. Keep it under 8 MB.", 413);
+      throw new RecognitionError("Image is too large. Keep it under 8 MB.", 413, "too_large");
     }
     chunks.push(chunk);
   }
   try {
     return JSON.parse(Buffer.concat(chunks).toString("utf8"));
   } catch {
-    throw new RecognitionError("Request body is not valid JSON.", 400);
+    throw new RecognitionError("Request body is not valid JSON.", 400, "bad_request");
   }
 }
 
@@ -46,7 +47,7 @@ async function readJsonBody(req) {
 function parseImage(dataUrl) {
   const match = /^data:([^;]+);base64,(.+)$/.exec(dataUrl ?? "");
   if (!match || !IMAGE_TYPES.has(match[1])) {
-    throw new RecognitionError("Send a JPEG, PNG, WebP or GIF image.", 400);
+    throw new RecognitionError("Send a JPEG, PNG, WebP or GIF image.", 400, "bad_image");
   }
   return { mediaType: match[1], data: match[2] };
 }
@@ -56,11 +57,22 @@ async function handleAnalyze(req, res) {
   const image = parseImage(body.image);
   const recognition = await recognizeMeal(image);
   if (!recognition.is_food || recognition.items.length === 0) {
-    sendJson(res, 422, { error: "No food found in this photo. Try a clearer shot of your plate." });
+    sendJson(res, 422, { error: "No food found in this photo. Try a clearer shot of your plate.", code: "no_food" });
     return;
   }
-  const result = scorePlate(recognition.items, { constitution: body.constitution });
-  sendJson(res, 200, { ...result, demo: recognition.demo });
+  const result = scorePlate(recognition.items, { constitution: body.constitution, lang: body.lang });
+  // The recognized foods go back to the page so it can re-score them for a
+  // different language or body type without calling the model again.
+  sendJson(res, 200, { ...result, recognized: recognition.items, demo: recognition.demo });
+}
+
+async function handleScore(req, res) {
+  const body = await readJsonBody(req);
+  const { items } = normalizeRecognition({ items: body.items });
+  if (items.length === 0) {
+    throw new RecognitionError("No foods to score.", 400, "bad_request");
+  }
+  sendJson(res, 200, scorePlate(items, { constitution: body.constitution, lang: body.lang }));
 }
 
 async function serveStatic(req, res) {
@@ -84,6 +96,8 @@ const server = http.createServer(async (req, res) => {
   try {
     if (req.method === "POST" && req.url === "/api/analyze") {
       await handleAnalyze(req, res);
+    } else if (req.method === "POST" && req.url === "/api/score") {
+      await handleScore(req, res);
     } else if (req.method === "GET" && req.url === "/api/config") {
       const term = solarTermFor();
       const info = providerInfo();
@@ -91,7 +105,7 @@ const server = http.createServer(async (req, res) => {
         demo: info.provider === "demo",
         model: info.model,
         constitutions: CONSTITUTIONS,
-        solar_term: { zh: term.zh, en: term.en, tip: term.tip },
+        solar_term: { zh: term.zh, en: term.en, tip: term.tip, tip_zh: term.tip_zh },
       });
     } else if (req.method === "GET") {
       await serveStatic(req, res);
@@ -100,10 +114,10 @@ const server = http.createServer(async (req, res) => {
     }
   } catch (error) {
     if (error instanceof RecognitionError) {
-      sendJson(res, error.status, { error: error.message });
+      sendJson(res, error.status, { error: error.message, code: error.code });
     } else {
       console.error(error);
-      sendJson(res, 500, { error: "Something went wrong. Please try again." });
+      sendJson(res, 500, { error: "Something went wrong. Please try again.", code: "server_error" });
     }
   }
 });

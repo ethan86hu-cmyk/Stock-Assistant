@@ -126,7 +126,7 @@ test("larger portions weigh more in the plate score", () => {
 
 test("unknown constitutions fall back to balanced", () => {
   const result = scorePlate([item({ food_key: "white_rice" })], { constitution: "nope", date: EQUINOX });
-  assert.equal(result.constitution.key, "balanced");
+  assert.equal(result.constitution, "balanced");
   assert.equal(result.target, 0);
 });
 
@@ -142,4 +142,33 @@ test("solar terms resolve on and between boundary dates", () => {
   assert.equal(solarTermFor(new Date(2026, 0, 3)).zh, "冬至");
   assert.equal(solarTermFor(new Date(2026, 11, 31)).zh, "冬至");
   assert.equal(solarTermFor(new Date(2026, 1, 4)).zh, "立春");
+});
+
+test("advice and the target explanation follow the requested language", () => {
+  const items = [
+    item({ name_en: "Watermelon", name_zh: "西瓜", food_key: "watermelon", portion: "large" }),
+    item({ name_en: "Iced latte", name_zh: "冰拿铁", food_key: "coffee", cooking: "iced", drink_temperature: "iced" }),
+  ];
+  const zh = scorePlate(items, { constitution: "runs_cold", lang: "zh", date: new Date(2026, 8, 25) });
+  assert.equal(zh.advice.headline, "今天吃这些，对你来说太寒了");
+  assert.match(zh.advice.grandma, /西瓜/);
+  assert.equal(zh.advice.suggestions.length, 3);
+  assert.equal(zh.target_reason, "你今天适合吃得稍微偏温，因为你怕冷，而且天气在转凉（秋分）。");
+
+  const en = scorePlate(items, { constitution: "runs_cold", lang: "en", date: new Date(2026, 8, 25) });
+  assert.equal(en.advice.headline, "Too cooling for you today");
+  assert.equal(en.score, zh.score);
+});
+
+test("an unknown language falls back to English", () => {
+  const result = scorePlate([item({ food_key: "white_rice" })], { lang: "fr", date: EQUINOX });
+  assert.equal(result.advice.headline, "Nicely balanced");
+});
+
+test("opposing reasons for the target are joined with but", () => {
+  const date = new Date(2026, 8, 25); // autumn: the season pulls warmer
+  const en = scorePlate([item({ food_key: "white_rice" })], { constitution: "runs_hot", date });
+  assert.equal(en.target_reason, "Your ideal today is neutral, because you run warm, but the weather is cooling (Autumn Equinox).");
+  const zh = scorePlate([item({ food_key: "white_rice" })], { constitution: "runs_hot", date, lang: "zh" });
+  assert.equal(zh.target_reason, "你今天适合吃得平和，因为你怕热，但天气在转凉（秋分）。");
 });

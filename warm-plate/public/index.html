@@ -1,8 +1,10 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" translate="no">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- The page has its own Chinese version; stop browsers from auto-translating it. -->
+  <meta name="google" content="notranslate">
   <title>Warm Plate</title>
   <meta name="description" content="Snap your meal and see if it's warming or cooling, the way a Chinese grandma would.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23b5452f'/%3E%3Ccircle cx='16' cy='16' r='8' fill='%23faf6f0'/%3E%3C/svg%3E">
@@ -11,14 +13,17 @@
 <body>
   <main>
     <header>
-      <h1>Warm Plate <span class="zh">暖盘</span></h1>
-      <p class="tagline">Snap your meal. See if it's warming or cooling, the way a Chinese grandma would.</p>
+      <div class="title-row">
+        <h1><span data-i18n="title"></span> <span class="zh">暖盘</span></h1>
+        <div class="lang-toggle" role="group" aria-label="Language">
+          <button type="button" data-lang="en">EN</button>
+          <button type="button" data-lang="zh">中文</button>
+        </div>
+      </div>
+      <p class="tagline" data-i18n="tagline"></p>
     </header>
 
-    <p id="demo-banner" class="banner" hidden>
-      Demo mode: no API key is configured, so every photo returns the same sample result.
-      Add a key to <code>.env</code> (see <code>.env.example</code>) to analyze real photos.
-    </p>
+    <p id="demo-banner" class="banner" data-i18n="demo" hidden></p>
 
     <section class="card" id="term-card" hidden>
       <div class="term-name"><span id="term-zh"></span> <span id="term-en"></span></div>
@@ -26,16 +31,16 @@
     </section>
 
     <section class="card">
-      <h2>How does your body usually feel?</h2>
-      <div id="constitutions" class="chips" role="radiogroup" aria-label="Body type"></div>
+      <h2 data-i18n="bodyQuestion"></h2>
+      <div id="constitutions" class="chips" role="radiogroup"></div>
     </section>
 
     <section class="card">
       <label class="upload" for="photo">
         <input id="photo" type="file" accept="image/*" capture="environment">
-        <span id="upload-label">Take or choose a photo of your meal</span>
+        <span data-i18n="upload"></span>
       </label>
-      <img id="preview" alt="Your meal" hidden>
+      <img id="preview" alt="" hidden>
       <p id="status" role="status"></p>
     </section>
 
@@ -50,11 +55,16 @@
         </div>
         <div class="gauge" aria-hidden="true">
           <div class="gauge-bar"></div>
-          <div class="gauge-marker target" id="target-marker" title="Your ideal today"></div>
-          <div class="gauge-marker plate" id="plate-marker" title="This meal"></div>
+          <div class="gauge-marker target" id="target-marker"></div>
+          <div class="gauge-marker plate" id="plate-marker"></div>
         </div>
-        <div class="gauge-labels"><span>Cold 寒</span><span>Neutral 平</span><span>Hot 热</span></div>
-        <p class="gauge-legend"><span class="dot plate"></span> This meal <span class="dot target"></span> Your ideal today</p>
+        <div class="gauge-labels">
+          <span data-i18n="scaleCold"></span><span data-i18n="scaleNeutral"></span><span data-i18n="scaleHot"></span>
+        </div>
+        <p class="gauge-legend">
+          <span class="dot plate"></span> <span data-i18n="legendMeal"></span>
+          <span class="dot target"></span> <span data-i18n="legendIdeal"></span>
+        </p>
         <p class="target-reason" id="target-reason"></p>
       </div>
 
@@ -64,15 +74,12 @@
       </div>
 
       <div class="card">
-        <h2>What's on your plate</h2>
+        <h2 data-i18n="plateHeading"></h2>
         <ul id="items" class="items"></ul>
       </div>
     </section>
 
-    <footer>
-      Warm Plate shares traditional Chinese food-therapy ideas for everyday eating. It is not medical advice
-      and does not diagnose or treat any condition.
-    </footer>
+    <footer data-i18n="disclaimer"></footer>
   </main>
   <script src="app.js" type="module"></script>
 </body>

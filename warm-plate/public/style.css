@@ -39,7 +39,19 @@ main {
   padding: 24px 16px 48px;
 }
 
+.title-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 h1 { margin: 0; font-size: 28px; }
+.lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; flex-shrink: 0; }
+.lang-toggle button {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  padding: 4px 12px;
+  cursor: pointer;
+}
+.lang-toggle button[aria-pressed="true"] { background: var(--accent); color: #fff; }
 h1 .zh { color: var(--accent); font-weight: 500; }
 h2 { font-size: 16px; margin: 0 0 12px; }
 .tagline { color: var(--muted); margin: 4px 0 20px; }

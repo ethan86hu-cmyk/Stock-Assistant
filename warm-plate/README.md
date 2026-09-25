@@ -1,8 +1,10 @@
 # Warm Plate 暖盘
 
-拍一张饭菜照片，用中医食疗"寒热温凉"的视角看这顿饭偏寒还是偏热，并按你的体质和当前节气给出"中国奶奶式"建议。面向海外用户，界面为英文。
+拍一张饭菜照片，用中医食疗"寒热温凉"的视角看这顿饭偏寒还是偏热，并按你的体质和当前节气给出"中国奶奶式"建议。界面支持英文和中文，右上角切换，默认跟随浏览器语言。
 
-![screenshot](docs/screenshot.png)
+| English | 中文 |
+|---|---|
+| ![English](docs/screenshot.png) | ![中文](docs/screenshot-zh.png) |
 
 ## 运行
 
@@ -52,16 +54,16 @@ npm test
 
 | 文件 | 作用 |
 |---|---|
-| `server.mjs` | HTTP 服务：静态页面、`/api/config`、`/api/analyze` |
+| `server.mjs` | HTTP 服务：静态页面、`/api/config`、`/api/analyze`（识别 + 打分）、`/api/score`（只重新打分，切换语言或体质时用，不再调用模型） |
 | `lib/recognize.mjs` | 按配置选择识别提供方 |
 | `lib/recognition.mjs` | 提示词、输出格式、结果校验、配置读取 |
 | `lib/providers/openaiCompatible.mjs` | DeepSeek / OpenAI 兼容接口 |
 | `lib/providers/claude.mjs` | Claude 接口 |
 | `lib/env.mjs` | 加载 `.env` |
 | `lib/foods.mjs` | 约 100 种食物的寒热属性表 |
-| `lib/scoring.mjs` | 打分、体质、建议文案 |
+| `lib/scoring.mjs` | 打分、体质、中英文建议文案 |
 | `lib/solarTerms.mjs` | 二十四节气日期和每个节气的饮食提示 |
-| `public/` | 前端页面 |
+| `public/` | 前端页面；界面文字在 `app.js` 的 `STRINGS` 里 |
 | `test/` | 单元测试（`node --test`） |
 
 ## 已知局限和下一步

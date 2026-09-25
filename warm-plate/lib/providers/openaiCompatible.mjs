@@ -42,9 +42,9 @@ export async function recognizeWithOpenAICompatible({ mediaType, data }, config)
     });
   } catch (error) {
     if (error.name === "TimeoutError") {
-      throw new RecognitionError("The recognition service took too long. Try again.", 504);
+      throw new RecognitionError("The recognition service took too long. Try again.", 504, "timeout");
     }
-    throw new RecognitionError(`Could not reach the recognition service (${error.message}).`, 502);
+    throw new RecognitionError(`Could not reach the recognition service (${error.message}).`, 502, "unreachable");
   }
 
   if (!response.ok) {
@@ -56,11 +56,11 @@ export async function recognizeWithOpenAICompatible({ mediaType, data }, config)
   const payload = await response.json();
   const choice = payload.choices?.[0];
   if (choice?.finish_reason === "length") {
-    throw new RecognitionError("Recognition was cut off. Try a simpler photo.", 502);
+    throw new RecognitionError("Recognition was cut off. Try a simpler photo.", 502, "cut_off");
   }
   const reply = choice?.message?.content;
   if (typeof reply !== "string" || reply.trim() === "") {
-    throw new RecognitionError("Recognition returned no result.", 502);
+    throw new RecognitionError("Recognition returned no result.", 502, "bad_result");
   }
   return parseJsonReply(reply);
 }
@@ -77,18 +77,19 @@ async function readErrorDetail(response) {
 function errorForStatus(status, detail) {
   switch (status) {
     case 401:
-      return new RecognitionError("The server's API key is invalid.", 500);
+      return new RecognitionError("The server's API key is invalid.", 500, "invalid_key");
     case 402:
-      return new RecognitionError("The API account is out of credit.", 500);
+      return new RecognitionError("The API account is out of credit.", 500, "no_credit");
     case 429:
-      return new RecognitionError("Too many requests right now. Try again in a minute.", 429);
+      return new RecognitionError("Too many requests right now. Try again in a minute.", 429, "rate_limited");
     case 400:
     case 422:
       return new RecognitionError(
         `The recognition service rejected the request: ${detail}. Check that AI_MODEL supports images; if it mentions response_format, set AI_JSON_MODE=0.`,
         502,
+        "rejected",
       );
     default:
-      return new RecognitionError(`Recognition service error (${status}).`, 502);
+      return new RecognitionError(`Recognition service error (${status}).`, 502, "service_error");
   }
 }

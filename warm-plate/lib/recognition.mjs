@@ -71,9 +71,11 @@ Allowed values:
 export const USER_PROMPT = "What is in this meal?";
 
 export class RecognitionError extends Error {
-  constructor(message, status = 502) {
+  // `code` lets the page show the error in the user's language.
+  constructor(message, status = 502, code = "service_error") {
     super(message);
     this.status = status;
+    this.code = code;
   }
 }
 
@@ -85,7 +87,7 @@ const text = (value) => (typeof value === "string" ? value.trim().slice(0, 80) :
 // back to safe defaults instead of failing the whole request.
 export function normalizeRecognition(raw) {
   if (!raw || typeof raw !== "object") {
-    throw new RecognitionError("Recognition returned an unreadable result.", 502);
+    throw new RecognitionError("Recognition returned an unreadable result.", 502, "bad_result");
   }
   const items = (Array.isArray(raw.items) ? raw.items : [])
     .filter((item) => item && typeof item === "object" && text(item.name_en))
@@ -107,12 +109,12 @@ export function parseJsonReply(reply) {
   const start = reply.indexOf("{");
   const end = reply.lastIndexOf("}");
   if (start === -1 || end <= start) {
-    throw new RecognitionError("Recognition returned no JSON.", 502);
+    throw new RecognitionError("Recognition returned no JSON.", 502, "bad_result");
   }
   try {
     return JSON.parse(reply.slice(start, end + 1));
   } catch {
-    throw new RecognitionError("Recognition returned malformed JSON.", 502);
+    throw new RecognitionError("Recognition returned malformed JSON.", 502, "bad_result");
   }
 }
 
