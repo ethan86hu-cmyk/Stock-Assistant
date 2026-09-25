@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "start": "node server.mjs",
-    "demo": "DEMO=1 node server.mjs",
+    "demo": "node server.mjs --demo",
     "test": "node --test test/*.test.mjs"
   },
   "engines": {

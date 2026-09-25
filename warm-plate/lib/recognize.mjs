@@ -73,7 +73,7 @@ const DEMO_ITEMS = [
 ];
 
 export function isDemoMode() {
-  if (process.env.DEMO === "1") return true;
+  if (process.env.DEMO === "1" || process.argv.includes("--demo")) return true;
   return !process.env.ANTHROPIC_API_KEY && !process.env.ANTHROPIC_AUTH_TOKEN;
 }
 
