@@ -133,6 +133,7 @@ h2 { font-size: 16px; margin: 0 0 12px; }
 .gauge-marker.target { background: var(--target); opacity: 0.6; }
 .gauge-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
 .gauge-legend { font-size: 12px; color: var(--muted); margin: 8px 0 0; }
+.target-reason { font-size: 13px; color: var(--muted); margin: 4px 0 0; }
 .dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin: 0 4px 0 8px; vertical-align: -1px; }
 .dot.plate { background: var(--accent); margin-left: 0; }
 .dot.target { background: var(--target); opacity: 0.6; }

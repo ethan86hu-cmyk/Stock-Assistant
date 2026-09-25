@@ -57,6 +57,28 @@ function natureBand(value) {
   return "2";
 }
 
+// A whole plate averages several foods, so it rarely reaches the extremes;
+// it needs a stronger average than a single food to be called hot or cold.
+function plateBand(value) {
+  if (value <= -1.25) return "-2";
+  if (value <= -0.35) return "-1";
+  if (value < 0.35) return "0";
+  if (value < 1.25) return "1";
+  return "2";
+}
+
+// Explains in plain words why today's ideal sits where it does.
+function describeTarget(target, constitution, term) {
+  const level = target > 0.2 ? "slightly warming" : target < -0.2 ? "slightly cooling" : "neutral";
+  const reasons = [];
+  if (constitution === "runs_cold") reasons.push("you run cold");
+  if (constitution === "runs_hot") reasons.push("you run warm");
+  if (term.seasonBias > 0) reasons.push(`the weather is cooling (${term.en})`);
+  if (term.seasonBias < 0) reasons.push(`it's the hot season (${term.en})`);
+  const because = reasons.length ? `, because ${reasons.join(" and ")}` : "";
+  return `Your ideal today is ${level}${because}.`;
+}
+
 // Resolves one recognized item to its nature and effective warmth.
 export function scoreItem(item) {
   const known = FOODS[item.food_key];
@@ -114,21 +136,29 @@ export function scorePlate(items, { constitution = "balanced", date = new Date()
   if (gap < -0.5) {
     verdict = "too_cold";
     advice = {
-      headline: "Too cold for you right now",
+      headline: "Too cooling for you today",
       grandma: `Aiya, ${listNames(coolest)}? Your stomach needs some warmth!`,
       suggestions: WARMING_SUGGESTIONS.slice(0, 3),
     };
   } else if (gap > 0.5) {
     verdict = "too_warm";
     advice = {
-      headline: "A bit too heating for you",
+      headline: "Too warming for you today",
       grandma: `${capitalize(listNames(warmest))} all at once? Careful, you'll get too much heat (上火).`,
       suggestions: COOLING_SUGGESTIONS.slice(0, 3),
     };
   } else {
     verdict = "balanced";
+    // "Balanced" means right for this eater today, not necessarily neutral:
+    // a warming meal can be exactly what someone who runs cold needs.
+    const leaning = Number(plateBand(average));
     advice = {
-      headline: "Nicely balanced",
+      headline:
+        leaning > 0
+          ? "Warming, and right for you today"
+          : leaning < 0
+            ? "Cooling, and right for you today"
+            : "Nicely balanced",
       grandma: "Good, good. This is how you should eat. Now finish it while it's warm.",
       suggestions: [],
     };
@@ -136,8 +166,9 @@ export function scorePlate(items, { constitution = "balanced", date = new Date()
 
   return {
     score: Math.round(clamp(average, -2, 2) * 50), // -100 (cold) .. +100 (hot)
-    plate_nature: NATURE_LABELS[natureBand(average)],
+    plate_nature: NATURE_LABELS[plateBand(average)],
     target: round1(target),
+    target_reason: describeTarget(target, constitution in CONSTITUTIONS ? constitution : "balanced", term),
     verdict,
     advice,
     items: scored.map(({ weight, ...rest }) => rest),

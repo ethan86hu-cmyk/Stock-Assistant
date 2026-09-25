@@ -114,6 +114,7 @@ function render(data) {
   $("headline").textContent = data.advice.headline;
   $("plate-marker").style.left = `${toPercent(data.score / 50)}%`;
   $("target-marker").style.left = `${toPercent(data.target)}%`;
+  $("target-reason").textContent = data.target_reason;
 
   $("grandma").textContent = `“${data.advice.grandma}”`;
   const suggestions = $("suggestions");

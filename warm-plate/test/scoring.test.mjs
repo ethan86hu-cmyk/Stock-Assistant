@@ -84,6 +84,38 @@ test("a steamed fish and rice meal is balanced", () => {
   assert.equal(result.advice.suggestions.length, 0);
 });
 
+test("a warm meal for someone who runs cold reads as warm and right, not hot", () => {
+  // Average warmth 1.0 against a target of 0.5 (runs cold + autumn equinox).
+  const result = scorePlate(
+    [
+      item({ name_en: "Beef stew", food_key: "beef", cooking: "boiled" }),
+      item({ name_en: "Rice", food_key: "white_rice", cooking: "steamed" }),
+      item({ name_en: "Ginger chicken", food_key: "chicken", cooking: "stir_fried" }),
+      item({ name_en: "Black tea", food_key: "black_tea", drink_temperature: "hot" }),
+    ],
+    { constitution: "runs_cold", date: new Date(2026, 8, 25) },
+  );
+  assert.equal(result.score, 50);
+  assert.equal(result.plate_nature.en, "Warm");
+  assert.equal(result.verdict, "balanced");
+  assert.equal(result.advice.headline, "Warming, and right for you today");
+  assert.match(result.target_reason, /slightly warming, because you run cold and the weather is cooling/);
+});
+
+test("a plate is only called hot when its average is strongly warm", () => {
+  const hot = scorePlate(
+    [item({ food_key: "lamb", cooking: "grilled_roasted" }), item({ food_key: "chili", cooking: "stir_fried" })],
+    { date: EQUINOX },
+  );
+  assert.equal(hot.plate_nature.en, "Hot");
+  assert.equal(hot.advice.headline, "Too warming for you today");
+});
+
+test("the target explanation is plain when nothing shifts it", () => {
+  const result = scorePlate([item({ food_key: "white_rice" })], { date: EQUINOX });
+  assert.equal(result.target_reason, "Your ideal today is neutral.");
+});
+
 test("larger portions weigh more in the plate score", () => {
   const bigWatermelon = scorePlate(
     [item({ food_key: "watermelon", portion: "large" }), item({ food_key: "lamb", portion: "small" })],
