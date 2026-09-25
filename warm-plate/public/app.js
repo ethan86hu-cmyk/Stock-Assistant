@@ -24,12 +24,18 @@ const STRINGS = {
     notImage: "That file doesn't look like an image.",
     unreachable: "Could not reach the server.",
     photoAlt: "Your meal",
+    waitlistTitle: "Get early access",
+    waitlistPitch: "Weekly warm/cool trends of what you eat, and a nudge when the season changes. Leave your email and we'll let you know when it's ready.",
+    waitlistButton: "Join",
+    waitlistPlaceholder: "you@example.com",
+    waitlistDone: "Thanks! You're on the list.",
+    waitlistAlready: "You're already on the list.",
     cooking: {
       raw: "raw", iced: "iced", steamed: "steamed", boiled: "boiled", braised_stewed: "braised or stewed",
       stir_fried: "stir-fried", baked: "baked", grilled_roasted: "grilled or roasted", deep_fried: "deep-fried",
     },
     temperature: { iced: "iced", cold: "cold", room: "at room temperature", warm: "warm", hot: "hot" },
-    errors: {},
+    errors: { bad_email: "Enter a valid email address." },
   },
   zh: {
     title: "Warm Plate",
@@ -52,6 +58,12 @@ const STRINGS = {
     notImage: "这个文件看起来不是图片。",
     unreachable: "连不上服务器。",
     photoAlt: "你的饭菜",
+    waitlistTitle: "抢先体验",
+    waitlistPitch: "每周告诉你饮食的寒热趋势，节气变化时提醒你调整。留下邮箱，功能上线时第一时间通知你。",
+    waitlistButton: "加入",
+    waitlistPlaceholder: "you@example.com",
+    waitlistDone: "谢谢！你已加入等待名单。",
+    waitlistAlready: "你已经在等待名单里了。",
     cooking: {
       raw: "生食", iced: "冰镇", steamed: "蒸", boiled: "水煮", braised_stewed: "炖煮",
       stir_fried: "炒", baked: "烤箱烤", grilled_roasted: "烧烤", deep_fried: "油炸",
@@ -73,6 +85,7 @@ const STRINGS = {
       refused: "这张照片无法分析。",
       service_error: "识别服务出错了，请稍后再试。",
       server_error: "出了点问题，请再试一次。",
+      bad_email: "请输入有效的邮箱地址。",
     },
   },
 };
@@ -131,10 +144,27 @@ function applyLanguage() {
   for (const el of document.querySelectorAll("[data-i18n]")) {
     el.textContent = t()[el.dataset.i18n];
   }
-  for (const button of document.querySelectorAll(".lang-toggle button")) {
+  $("waitlist-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const status = $("waitlist-status");
+  try {
+    // ?ref=... in the link (e.g. one per TikTok video) shows which post brought the sign-up.
+    const source = new URLSearchParams(location.search).get("ref") || "web";
+    const data = await postJson("/api/waitlist", { email: $("waitlist-email").value, lang, source });
+    status.textContent = data.already ? t().waitlistAlready : t().waitlistDone;
+    status.classList.remove("error");
+    $("waitlist-email").value = "";
+  } catch (error) {
+    status.textContent = error.message;
+    status.classList.add("error");
+  }
+});
+
+for (const button of document.querySelectorAll(".lang-toggle button")) {
     button.setAttribute("aria-pressed", String(button.dataset.lang === lang));
   }
   $("preview").alt = t().photoAlt;
+  $("waitlist-email").placeholder = t().waitlistPlaceholder;
 
   if (config) {
     const term = config.solar_term;
@@ -298,6 +328,22 @@ function renderItem(item) {
   li.append(info, badge);
   return li;
 }
+
+$("waitlist-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const status = $("waitlist-status");
+  try {
+    // ?ref=... in the link (e.g. one per TikTok video) shows which post brought the sign-up.
+    const source = new URLSearchParams(location.search).get("ref") || "web";
+    const data = await postJson("/api/waitlist", { email: $("waitlist-email").value, lang, source });
+    status.textContent = data.already ? t().waitlistAlready : t().waitlistDone;
+    status.classList.remove("error");
+    $("waitlist-email").value = "";
+  } catch (error) {
+    status.textContent = error.message;
+    status.classList.add("error");
+  }
+});
 
 for (const button of document.querySelectorAll(".lang-toggle button")) {
   button.addEventListener("click", () => selectLanguage(button.dataset.lang));

@@ -7,12 +7,16 @@ import { recognizeMeal, providerInfo, RecognitionError } from "./lib/recognize.m
 import { normalizeRecognition } from "./lib/recognition.mjs";
 import { scorePlate, CONSTITUTIONS } from "./lib/scoring.mjs";
 import { solarTermFor } from "./lib/solarTerms.mjs";
+import { Waitlist } from "./lib/waitlist.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.join(here, "public");
 const PORT = Number(process.env.PORT) || 3000;
+// Set HOST=127.0.0.1 on a server so only the local reverse proxy can reach the app.
+const HOST = process.env.HOST || "0.0.0.0";
 const MAX_BODY_BYTES = 8 * 1024 * 1024;
 const IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+const waitlist = new Waitlist();
 
 const STATIC_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -75,6 +79,15 @@ async function handleScore(req, res) {
   sendJson(res, 200, scorePlate(items, { constitution: body.constitution, lang: body.lang }));
 }
 
+async function handleWaitlist(req, res) {
+  const body = await readJsonBody(req);
+  const outcome = waitlist.add(body.email, { lang: body.lang, source: body.source });
+  if (outcome === "invalid") {
+    throw new RecognitionError("Enter a valid email address.", 400, "bad_email");
+  }
+  sendJson(res, 200, { ok: true, already: outcome === "exists" });
+}
+
 async function serveStatic(req, res) {
   const urlPath = new URL(req.url, "http://localhost").pathname;
   const relative = urlPath === "/" ? "index.html" : urlPath.slice(1);
@@ -98,6 +111,8 @@ const server = http.createServer(async (req, res) => {
       await handleAnalyze(req, res);
     } else if (req.method === "POST" && req.url === "/api/score") {
       await handleScore(req, res);
+    } else if (req.method === "POST" && req.url === "/api/waitlist") {
+      await handleWaitlist(req, res);
     } else if (req.method === "GET" && req.url === "/api/config") {
       const term = solarTermFor();
       const info = providerInfo();
@@ -122,7 +137,7 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, HOST, () => {
   const info = providerInfo();
   const mode =
     info.provider === "demo"

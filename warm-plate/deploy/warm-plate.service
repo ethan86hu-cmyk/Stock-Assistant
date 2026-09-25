@@ -1,0 +1,23 @@
+# systemd unit for Warm Plate.
+# Install: sudo cp deploy/warm-plate.service /etc/systemd/system/
+#          sudo systemctl daemon-reload && sudo systemctl enable --now warm-plate
+[Unit]
+Description=Warm Plate (meal warming/cooling analyzer)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/warm-plate
+# API keys and other settings live in /opt/warm-plate/.env (see .env.example).
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=3100
+ExecStart=/usr/bin/node server.mjs
+Restart=on-failure
+RestartSec=3
+# Run as an unprivileged user that owns /opt/warm-plate.
+User=warmplate
+Group=warmplate
+
+[Install]
+WantedBy=multi-user.target

@@ -60,11 +60,17 @@ npm test
 | `lib/providers/openaiCompatible.mjs` | DeepSeek / OpenAI 兼容接口 |
 | `lib/providers/claude.mjs` | Claude 接口 |
 | `lib/env.mjs` | 加载 `.env` |
+| `lib/waitlist.mjs` | 等待名单，存在 `data/waitlist.jsonl` |
+| `deploy/` | 服务器部署文件和步骤（见 [deploy/DEPLOY.md](deploy/DEPLOY.md)） |
 | `lib/foods.mjs` | 约 100 种食物的寒热属性表 |
 | `lib/scoring.mjs` | 打分、体质、中英文建议文案 |
 | `lib/solarTerms.mjs` | 二十四节气日期和每个节气的饮食提示 |
 | `public/` | 前端页面；界面文字在 `app.js` 的 `STRINGS` 里 |
 | `test/` | 单元测试（`node --test`） |
+
+## 部署
+
+部署到服务器的步骤见 [deploy/DEPLOY.md](deploy/DEPLOY.md)。推送到 `main` 分支后，GitHub Actions 会先跑测试，通过后自动上传并重启服务。
 
 ## 已知局限和下一步
 
@@ -72,7 +78,7 @@ npm test
 - **节气只支持北半球**，日期按常见日期近似，每年可能差一天
 - **体质只分三类**，后续可以换成完整的体质问卷
 - **识别效果和成本要实测**：DeepSeek 视觉模型还是实验版，建议用同一批照片对比 DeepSeek 和其他模型的识别准确率
-- 还没有用户系统、历史记录和付费墙
+- 还没有用户系统、历史记录和付费墙；目前只有等待名单
 
 ## 合规提醒
 
