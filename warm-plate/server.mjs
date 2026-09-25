@@ -1,8 +1,9 @@
+import "./lib/env.mjs";
 import http from "node:http";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { recognizeMeal, isDemoMode, RecognitionError } from "./lib/recognize.mjs";
+import { recognizeMeal, providerInfo, RecognitionError } from "./lib/recognize.mjs";
 import { scorePlate, CONSTITUTIONS } from "./lib/scoring.mjs";
 import { solarTermFor } from "./lib/solarTerms.mjs";
 
@@ -85,8 +86,10 @@ const server = http.createServer(async (req, res) => {
       await handleAnalyze(req, res);
     } else if (req.method === "GET" && req.url === "/api/config") {
       const term = solarTermFor();
+      const info = providerInfo();
       sendJson(res, 200, {
-        demo: isDemoMode(),
+        demo: info.provider === "demo",
+        model: info.model,
         constitutions: CONSTITUTIONS,
         solar_term: { zh: term.zh, en: term.en, tip: term.tip },
       });
@@ -106,6 +109,10 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => {
-  const mode = isDemoMode() ? "demo mode (sample results, no API calls)" : "live mode";
+  const info = providerInfo();
+  const mode =
+    info.provider === "demo"
+      ? "demo mode (sample results, no API calls)"
+      : `live mode (${info.provider}, ${info.model})`;
   console.log(`Warm Plate running at http://localhost:${PORT} in ${mode}`);
 });

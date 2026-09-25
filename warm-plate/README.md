@@ -6,21 +6,40 @@
 
 ## 运行
 
-需要 Node.js 20 或更高版本。
+需要 Node.js 20.12 或更高版本。
 
 ```bash
 npm install
-npm start          # 有 ANTHROPIC_API_KEY 时调用 Claude 识别照片
-npm run demo       # 演示模式：不调用 API，任何照片都返回同一份示例结果
+npm start          # 按 .env 里的配置调用识别接口；没配密钥时自动进入演示模式
+npm run demo       # 强制演示模式：不调用 API，任何照片都返回同一份示例结果
 npm test
 ```
 
-打开 http://localhost:3000 。没有设置 `ANTHROPIC_API_KEY`（或 `ANTHROPIC_AUTH_TOKEN`）时会自动进入演示模式。端口可用 `PORT` 环境变量修改。
+打开 http://localhost:3000 。
+
+## 配置识别接口
+
+把 `.env.example` 复制为 `.env`，填一个提供方即可（Windows：`copy .env.example .env`）。命令行里设置的环境变量优先于 `.env`。
+
+| 提供方 | 最少配置 | 默认模型 |
+|---|---|---|
+| **DeepSeek**（默认） | `DEEPSEEK_API_KEY=...` | `deepseek-v4-flash-vision-exp` |
+| 任意 OpenAI 兼容接口（通义千问、OpenAI、本地服务等） | `AI_PROVIDER=openai_compatible`、`AI_BASE_URL`、`AI_MODEL`、`AI_API_KEY` | 无，必须指定 |
+| Claude | `AI_PROVIDER=claude`、`ANTHROPIC_API_KEY` | `claude-opus-5` |
+
+其他选项：
+
+- `AI_MODEL`：覆盖任何提供方的模型名
+- `AI_BASE_URL`：覆盖 DeepSeek 或 OpenAI 兼容接口的地址
+- `AI_JSON_MODE=0`：接口不支持 `response_format` 时关闭 JSON 模式
+- `PORT`：端口
+
+注意：**模型必须支持图片输入**。DeepSeek 的 `deepseek-v4-flash-vision-exp` 是 2026 年 8 月上线的实验模型，普通的 `deepseek-chat` 不能看图。
 
 ## 工作原理
 
 1. 浏览器把照片压缩到最长边 1280px，发给 `POST /api/analyze`
-2. Claude（`claude-opus-5`）只负责**识别**：列出食物、烹饪方式、饮品温度、份量，并把每样食物对应到食物表里的条目（结构化输出，JSON Schema 约束）
+2. 视觉模型只负责**识别**：列出食物、烹饪方式、饮品温度、份量，并把每样食物对应到食物表里的条目。Claude 用 JSON Schema 强制输出格式；DeepSeek 等 OpenAI 兼容接口用 JSON 模式加提示词约束，返回后再逐项校验，不合法的值会被替换成安全的默认值
 3. **寒热判定由本地食物表决定**（`lib/foods.mjs`），不交给模型。这样结果稳定、可复现，也方便人工校对。食物表里没有的，才用模型的估计，界面上会标 "estimated"
 4. 打分（`lib/scoring.mjs`）：
    - 食物本性：寒 -2、凉 -1、平 0、温 +1、热 +2
@@ -34,7 +53,11 @@ npm test
 | 文件 | 作用 |
 |---|---|
 | `server.mjs` | HTTP 服务：静态页面、`/api/config`、`/api/analyze` |
-| `lib/recognize.mjs` | 调用 Claude 识别食物；演示模式数据；错误处理 |
+| `lib/recognize.mjs` | 按配置选择识别提供方 |
+| `lib/recognition.mjs` | 提示词、输出格式、结果校验、配置读取 |
+| `lib/providers/openaiCompatible.mjs` | DeepSeek / OpenAI 兼容接口 |
+| `lib/providers/claude.mjs` | Claude 接口 |
+| `lib/env.mjs` | 加载 `.env` |
 | `lib/foods.mjs` | 约 100 种食物的寒热属性表 |
 | `lib/scoring.mjs` | 打分、体质、建议文案 |
 | `lib/solarTerms.mjs` | 二十四节气日期和每个节气的饮食提示 |
@@ -46,7 +69,7 @@ npm test
 - **食物表需要专业审核**：寒热分类来自常见食疗资料，不同来源对部分食物有分歧（比如芒果、番茄）。上线前应请懂中医食疗的人逐条核对
 - **节气只支持北半球**，日期按常见日期近似，每年可能差一天
 - **体质只分三类**，后续可以换成完整的体质问卷
-- **每张照片调用一次 Opus**，成本需要实测后再决定是否调整
+- **识别效果和成本要实测**：DeepSeek 视觉模型还是实验版，建议用同一批照片对比 DeepSeek 和其他模型的识别准确率
 - 还没有用户系统、历史记录和付费墙
 
 ## 合规提醒
